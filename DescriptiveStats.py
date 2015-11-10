@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 
-
-
 def plot_all_ratings():
 
     ratings = np.genfromtxt('postprocessed-data/user_ratings', delimiter=',', dtype=None)
@@ -19,7 +17,7 @@ def plot_all_ratings():
     plt.title("Rating Occurrence")
     plt.xlabel("Rating")
     plt.ylabel("Frequency")
-    plt.show()
+    return plt
 
 
 def plot_user_ratings(user_id):
