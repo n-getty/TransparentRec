@@ -207,3 +207,16 @@ def gen_sig_features(user_id, y_pred, weights, user_matrix, user_ratings):
     negative_df = negative_df.sort("Times Lowest Weight", ascending = 0)
     print negative_df
     #negative_df.to_csv(path_or_buf = "tables/user_" + str(user_id) + "_neg_sig_features.csv", index = 0)
+
+
+'''
+# Predict all Films
+infile = open("postprocessed-data/movie_matrix", "r")
+movie_matrix = pickle.load(infile)
+all_pred = clf.predict(movie_matrix[:, 1:])
+movie_df = pd.DataFrame(np.column_stack((movies, all_pred)), columns = ["Movie", "Rating"])
+movie_df = movie_df.sort("Rating", ascending = 0)
+print movies[63]
+print all_pred[63]
+print movie_df.head(10)
+'''
