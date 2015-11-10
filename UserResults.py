@@ -141,33 +141,22 @@ def gen_user_results(user_id, results):
     return df
 
 
-def gen_movie_weights(movie_id, weights, user_matrix):
+def gen_movie_weights(movie_id, dm, user_matrix):
+    movie_index = np.where(user_matrix[:,0] == movie_id)
+    movie_dm = dm[movie_index][0]
+
     feature_names = get_feature_names()
 
-    weight_indices = np.nonzero(weights)
-    movie_index = np.where(user_matrix[:,0] == movie_id)
-    movie_features = user_matrix[movie_index][0]
+    positive_weights = movie_dm[movie_dm > 0]
+    negative_weights = movie_dm[movie_dm < 0]
 
-    movie_features = movie_features[weight_indices]
+    positive_names = feature_names[movie_dm > 0]
+    negative_names = feature_names[movie_dm < 0]
 
-    non_zero_movie_features = np.nonzero(movie_features)
-    movie_features = movie_features[non_zero_movie_features]
-
-    non_zero_features = feature_names[weight_indices[0]-1]
-    non_zero_features = non_zero_features[non_zero_movie_features]
-    non_zero_weights = weights[weight_indices]
-    non_zero_weights = non_zero_weights[non_zero_movie_features]
-
-    non_zero_weights = non_zero_weights * movie_features
-
-
-    positive_indices = non_zero_weights > 0
-    negative_indices = non_zero_weights < 0
-
-    positive_weights = np.column_stack((non_zero_features[positive_indices],non_zero_weights[positive_indices]))
+    positive_weights = np.column_stack((positive_names,positive_weights))
     positive_weights = positive_weights[np.argsort(positive_weights[:,1])][::-1]
 
-    negative_weights = np.column_stack((non_zero_features[negative_indices],non_zero_weights[negative_indices]))
+    negative_weights = np.column_stack((negative_names,negative_weights))
     negative_weights = negative_weights[np.argsort(negative_weights[:,1])][::-1]
 
     positive_df = pd.DataFrame(positive_weights, columns = ["Feature", "Weights"])
@@ -218,3 +207,71 @@ def gen_sig_features(user_id, y_pred, weights, user_matrix, user_ratings):
     negative_df = negative_df.sort("Times Lowest Weight", ascending = 0)
     print negative_df
     #negative_df.to_csv(path_or_buf = "tables/user_" + str(user_id) + "_neg_sig_features.csv", index = 0)
+
+
+'''
+
+import numpy as np
+import UserMatrix as um
+import pickle
+from Classifiers import TransparentRidge
+import DescriptiveStats as ds
+import matplotlib
+import matplotlib.pyplot as plt
+
+# Loading user ratings and movie list
+ratings = np.genfromtxt('postprocessed-data/user_ratings', delimiter=',', dtype=int)
+movies = np.genfromtxt('postprocessed-data/movie_list', delimiter='|', dtype=str)
+
+# Loading user matrix
+user_id = 945
+user_matrix = um.get_user_matrix(user_id)
+user_ratings = ratings[user_id-1]
+
+# Creating model
+clf =TransparentRidge(alpha=.05)
+user_cols = user_matrix.shape[1]
+data = user_matrix[:, 1:(user_cols-1)]
+target = user_matrix[:, (user_cols-1)]
+clf.fit(data,target)
+weights = clf.coef_
+neg_evi, pos_evi = clf.predict_evidences(data)
+bias = clf.get_bias()
+y_pred = clf.predict(data)
+indices = np.argsort(y_pred)
+
+# Predict all Films
+infile = open("postprocessed-data/movie_matrix", "r")
+movie_matrix = pickle.load(infile)
+all_pred = clf.predict(movie_matrix[:, 1:])
+movie_df = pd.DataFrame(np.column_stack((movies, all_pred)), columns = ["Movie", "Rating"])
+movie_df = movie_df.sort("Rating", ascending = 0)
+print movies[63]
+print all_pred[63]
+print movie_df.head(10)
+exit(0)
+
+from scipy.sparse import diags
+coef_diags = diags(clf.coef_, 0)
+dm = data * coef_diags
+
+# The Highest Rating
+j = indices[-1]
+movie_id = user_matrix[j][0]
+res = um.get_avg_rating_for_movie(ratings, movie_id-1)
+avg_rating = res[0]
+num_rating = res[1]
+movie_features = gen_movie_weights(movie_id,dm,user_matrix)
+
+print "Movie Title: ", movies[movie_id-1]
+print "User Rating: ", user_ratings[movie_id-1]
+print "Average Rating: ", avg_rating
+print "Number of Ratings: ", num_rating
+print "Prediction: ",  clf.predict(data[j])[0]
+print "Bias and evidences:", bias, neg_evi[j], pos_evi[j]
+print "Positive Features"
+print movie_features[0].head(10)
+print "Negative Features"
+print movie_features[1].head(10)
+
+'''
