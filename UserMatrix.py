@@ -149,12 +149,12 @@ def get_user_matrix1(user_id):
     return user_matrix
 
 
-def get_user_matrix(user_id):
-    ratings = np.genfromtxt('postprocessed-data/user_ratings', delimiter=',', dtype=None)
+infile = open("postprocessed-data/movie_matrix", "r")
+movie_matrix = pickle.load(infile)
+infile.close()
 
-    infile = open("postprocessed-data/movie_matrix", "r")
-    movie_matrix = pickle.load(infile)
 
+def get_user_matrix(user_id, ratings):
     user_ratings = ratings[user_id-1]
     user_movies = np.nonzero(user_ratings)
 

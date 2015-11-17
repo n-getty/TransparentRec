@@ -47,9 +47,8 @@ def get_feature_names():
     return col_names
 
 
-def get_weights_and_features(results):
+def get_weights_and_features(weights):
     features = get_feature_names()
-    weights = results[1];
 
     positive_weight_indices = weights > 0
     negative_weight_indices = weights < 0
@@ -89,7 +88,8 @@ def gen_user_results_old(user_id, results):
     y_pred = results[2]
     nonzero_indices = np.nonzero(user_ratings)
     avg_ratings = um.get_avg_ratings(ratings)
-    avg_ratings = avg_ratings[nonzero_indices]
+    avg_ratings = avg_ratings[nonzero_indices][:,0]
+
     user_ratings = user_ratings[nonzero_indices]
     nonzero = nonzero_indices[0]
 
