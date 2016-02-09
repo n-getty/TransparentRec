@@ -46,7 +46,6 @@ def gen_actress_appearance_list():
         print>>output, actress
 
 
-
 def count_movies_with_actresss():
     actress_film_list = open("postprocessed-data/actress_in_grouplens_films")
     actress_film_list_lines = actress_film_list.readlines()
@@ -59,6 +58,7 @@ def count_movies_with_actresss():
     output = open("postprocessed-data/movie_set_actress", "w")
     for actress in movie_set:
         print>>output, actress
+
 
 def gen_popular_actresss():
     actress_film_list = open("postprocessed-data/actress_in_grouplens_films")
