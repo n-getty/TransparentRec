@@ -156,14 +156,48 @@ def get_lasso_cv_results(user_matrix, alphas):
 '''
 
 
-def get_ridge_cv_results(user_matrix, alpha):
+def get_linear_cv_results(user_matrix, folds):
+    user_cols = user_matrix.shape[1]
+    data = user_matrix[:, 1:(user_cols-1)]
+    target = user_matrix[:, (user_cols-1)]
+
+    linear = linear_model.LinearRegression()
+
+    kf = cross_validation.KFold(user_matrix.shape[0], n_folds=folds, shuffle = True, random_state = 16834)
+    all_pred = np.zeros(shape=(0))
+    all_indices = np.zeros(shape=(0))
+    mae_list = list()
+    for train_index, test_index in kf:
+        X_train, X_test =data[train_index], data[test_index]
+        y_train, y_test = target[train_index], target[test_index]
+
+        linear.fit(X_train, y_train)
+        y_pred = linear.predict(X_test)
+
+        mae = mean_absolute_error(y_test, y_pred)
+
+        all_pred = np.concatenate((all_pred,y_pred))
+        all_indices = np.concatenate((all_indices, test_index))
+
+        mae_list.append(mae)
+
+    y_pred = np.column_stack((all_indices,all_pred))
+    y_pred = y_pred[np.argsort(y_pred[:,0])][:,1]
+
+    mae = np.average(mae_list)
+    weights = linear.coef_
+
+    return [mae, weights, y_pred]
+
+
+def get_ridge_cv_results(user_matrix, alpha, folds):
     user_cols = user_matrix.shape[1]
     data = user_matrix[:, 1:(user_cols-1)]
     target = user_matrix[:, (user_cols-1)]
 
     ridge = linear_model.Ridge()
 
-    kf = cross_validation.KFold(user_matrix.shape[0], n_folds=5, shuffle = True, random_state = 16834)
+    kf = cross_validation.KFold(user_matrix.shape[0], n_folds=folds, shuffle = True, random_state = 16834)
     all_pred = np.zeros(shape=(0))
     all_indices = np.zeros(shape=(0))
     ridge.alpha = alpha
@@ -191,14 +225,14 @@ def get_ridge_cv_results(user_matrix, alpha):
     return [mae, weights, y_pred]
 
 
-def get_lasso_cv_results(user_matrix, alpha):
+def get_lasso_cv_results(user_matrix, alpha, folds):
     user_cols = user_matrix.shape[1]
     data = user_matrix[:, 1:(user_cols-1)]
     target = user_matrix[:, (user_cols-1)]
 
     lasso = linear_model.Lasso()
 
-    kf = cross_validation.KFold(user_matrix.shape[0], n_folds=5, shuffle = True, random_state = 16834)
+    kf = cross_validation.KFold(user_matrix.shape[0], n_folds=folds, shuffle = True, random_state = 16834)
     all_pred = np.zeros(shape=(0))
     all_indices = np.zeros(shape=(0))
     lasso.alpha = alpha

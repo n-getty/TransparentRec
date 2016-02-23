@@ -4,6 +4,8 @@ import pandas as pd
 import re
 import json
 import progressbar as pb
+from sklearn import preprocessing as pp
+from pandas import DataFrame as df
 
 
 def get_frequent_movies():
@@ -490,6 +492,7 @@ def get_actor_names():
         names.append(name[0])
     return names
 
+
 def get_alt_id_dict():
     movies = pd.read_csv("ml-latest/matched_set.csv", sep = ",")
     alt_dict = movies.set_index('title')['id'].to_dict()
@@ -499,11 +502,12 @@ def get_alt_id_dict():
 def get_movie_names():
     id_dict = get_id_row_dict()
     movie_set = pd.read_csv("ml-latest/matched_set.csv", sep = ",")
-    names = np.empty(len(id_dict))
-    for movie in movie_set:
+    names = np.empty(len(id_dict),dtype=object)
+    for idx, movie in movie_set.iterrows():
         if movie.id in id_dict:
             names[id_dict[movie.id]] = movie.title
     return names
+
 
 def count_alt():
     movies = pd.read_csv("ml-latest/matched_set.csv", sep = ",")
@@ -656,7 +660,6 @@ def get_genre_matrix():
 def get_matched_user_ratings(userid):
     id_dict = get_id_row_dict()
 
-    #ratings = np.load("ml-latest/ratings.npy")
     ratings = pd.read_csv("ml-latest/ratings.csv", delimiter=',', quotechar='"', names = ['userId', 'movieId', 'rating'])
 
     user_ratings = ratings.loc[ratings['userId'] == userid]
@@ -699,6 +702,7 @@ def sort_avg():
     return avg_and_num
 
 
+
 def get_sub_avg(movies, avg):
     return avg
 
@@ -720,36 +724,3 @@ def gen_user_results_old(user_ratings, results, avg_ratings):
     #df = df.convert_objects(convert_numeric=True)
 
     return df
-
-
-'''
-start = time()
-
-with open("ml-latest/user_ratings.json", "r") as file:
-        user_ratings = json.load(file)
-movies_list = pd.read_csv("ml-latest/movies.csv", delimiter=',', quotechar='"')
-keydict = get_movie_key_dict()
-id_dict = get_movie_id_dict()
-genre_list = movies_list.genres
-get_all_user_stats()
-
-userid = 46262
-user_ratings = get_matched_user_ratings(userid)
-#get_user_stats(user_ratings)
-user_movies = user_ratings.keys()
-id_dict = get_id_row_dict()
-idxs = [id_dict[k] for k in user_movies]
-print "Loading average and number of rating"
-avg_and_num = sort_avg()
-print avg_and_num.shape
-print "Loading genre matrix"
-genre_matrix = get_genre_matrix()[idxs]
-print "Loading key matrix"
-key_matrix = get_keyword_matrix()[idxs]
-print "Loading actor matrix"
-actor_matrix = get_actor_matrix()[idxs]
-data = np.column_stack(avg_and_num, genre_matrix, key_matrix, actor_matrix)
-target = [user_ratings[k] for k in idxs]
-
-print "Total time elapsed:", time() - start
-'''
