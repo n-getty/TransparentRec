@@ -609,10 +609,10 @@ def get_genre_dict():
     return genre_dict
 
 
-def get_keyword_matrix():
+def gen_keyword_matrix():
     keywords = pd.read_csv("ml-latest/matched_movies", delimiter='\t', usecols = [0,3], names = ['id', 'key'])
     key_dict = get_popular_key_dict(keywords.key)
-    print "Number of popular keys:", len(key_dict)
+    #print "Number of popular keys:", len(key_dict)
     id_dict = get_id_row_dict()
     key_matrix = np.zeros((len(id_dict), len(key_dict)))
     for x in range(len(keywords.id)):
@@ -622,11 +622,10 @@ def get_keyword_matrix():
             row = id_dict[id]
             column = key_dict[key]
             key_matrix[row][column] = 1
-    return key_matrix
-    #np.savetxt("ml-latest/key_matrix.csv", key_matrix, delimiter=",", fmt = '%1i')
+    np.savetxt("ml-latest/key_matrix.csv", key_matrix, delimiter=",", fmt = '%1i')
 
 
-def get_actor_matrix():
+def gen_actor_matrix():
     actor_list = get_popular_actors()
 
     id_dict = get_id_row_dict()
@@ -638,11 +637,10 @@ def get_actor_matrix():
         for movie in actor_list[x][1:]:
             row = id_dict[movie]
             actor_matrix[row][x] = 1
-    return actor_matrix
-    #np.savetxt("ml-latest/actor_matrix.csv", actor_matrix, delimiter=",", fmt = '%1i')
+    np.savetxt("ml-latest/actor_matrix.csv", actor_matrix, delimiter=",", fmt = '%1i')
 
 
-def get_genre_matrix():
+def gen_genre_matrix():
     movies = pd.read_csv("ml-latest/movies.csv", delimiter=',', quotechar='"')
     id_dict = get_id_row_dict()
     genre_dict = get_genre_dict()
@@ -653,7 +651,21 @@ def get_genre_matrix():
             genres = movies.genres[x].split('|')
             for genre in genres:
                 genre_matrix[id_dict[id]][genre_dict[genre]] = 1
-    #np.savetxt("ml-latest/genre_matrix.csv", genre_matrix, delimiter=",", fmt = '%1i')
+    np.savetxt("ml-latest/genre_matrix.csv", genre_matrix, delimiter=",", fmt = '%1i')
+
+
+def get_actor_matrix():
+    actor_matrix = np.loadtxt("ml-latest/actor_matrix.csv", delimiter=",")
+    return actor_matrix
+
+
+def get_key_matrix():
+    key_matrix = np.loadtxt("ml-latest/key_matrix.csv", delimiter=",")
+    return key_matrix
+
+
+def get_genre_matrix():
+    genre_matrix = np.loadtxt("ml-latest/genre_matrix.csv", delimiter=",")
     return genre_matrix
 
 

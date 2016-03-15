@@ -158,7 +158,7 @@ def get_lasso_cv_results(user_matrix, alphas):
 
 def get_linear_cv_results(user_matrix, folds):
     user_cols = user_matrix.shape[1]
-    data = user_matrix[:, 1:(user_cols-1)]
+    data = user_matrix[:, :(user_cols-1)]
     target = user_matrix[:, (user_cols-1)]
 
     linear = linear_model.LinearRegression()
@@ -192,7 +192,7 @@ def get_linear_cv_results(user_matrix, folds):
 
 def get_ridge_cv_results(user_matrix, alpha, folds):
     user_cols = user_matrix.shape[1]
-    data = user_matrix[:, 1:(user_cols-1)]
+    data = user_matrix[:, :(user_cols-1)]
     target = user_matrix[:, (user_cols-1)]
 
     ridge = linear_model.Ridge()
@@ -227,7 +227,7 @@ def get_ridge_cv_results(user_matrix, alpha, folds):
 
 def get_lasso_cv_results(user_matrix, alpha, folds):
     user_cols = user_matrix.shape[1]
-    data = user_matrix[:, 1:(user_cols-1)]
+    data = user_matrix[:, :(user_cols-1)]
     target = user_matrix[:, (user_cols-1)]
 
     lasso = linear_model.Lasso()
