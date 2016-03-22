@@ -736,3 +736,21 @@ def gen_user_results_old(user_ratings, results, avg_ratings):
     #df = df.convert_objects(convert_numeric=True)
 
     return df
+
+'''
+with open("ml-latest/user_ratings.json", "r") as file:
+        user_ratings = json.load(file)
+movies_list = pd.read_csv("ml-latest/movies.csv", delimiter=',', quotechar='"')
+matched = pd.read_csv("ml-latest/matched_movies", delimiter='\t', quotechar='"',dtype={'id': np.int32, 'title' : np.str_, 'alt' : np.str_, 'key' : np.str_}, names = ['id', 'title', 'alt', 'key'])
+keydict = get_movie_key_dict()
+id_dict = get_movie_id_dict()
+keyname = get_popular_key_dict(matched.key)
+genre_list = movies_list.genres
+#get_all_user_stats()
+userid = 28451
+ratings = np.array(user_ratings[userid])
+print get_user_stats(ratings)
+userid = 170099
+ratings = np.array(user_ratings[userid])
+print get_user_stats(ratings)
+'''

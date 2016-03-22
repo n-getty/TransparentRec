@@ -137,3 +137,12 @@ maxs, mins = build_rationales(rationale_data, rationale_weights, 0.01)
 names = np.hstack([genre_names, key_names, actor_names])
 print_rationales(names, maxs, mins)
 '''
+
+x = np.array([[1,2,3,4,5],[6,7,8,9,10]])
+print x
+movie = np.multiply(x[1], .01)
+print movie
+movie[1] *= 100
+print movie
+x[1] = movie
+print x
