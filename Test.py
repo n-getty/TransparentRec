@@ -1,4 +1,4 @@
 import numpy as np
 
-
-print np.arange(.1,1.1,.1)
+x = np.arange(10)
+print x[[1,2,3,6]]
