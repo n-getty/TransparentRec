@@ -2,6 +2,41 @@ from Classifiers import TransparentLinearRegression
 from LatestPreprocessing import *
 
 
+def get_rationale_weights(data, target):
+    clf =TransparentLinearRegression()
+    clf.fit(data, target)
+    weights = clf.coef_
+    return weights
+
+
+def build_rationales(data, target, weights, freq):
+    rows = data.shape[0]
+    cols = data.shape[1]
+    x = np.multiply(data,weights)
+    maxs = {k:0 for k in range(cols)}
+    mins = {k:0 for k in range(cols)}
+    for i in range(x.shape[0]):
+        row = x[i]
+        rating = target[i]
+        if rating > 3.0:
+            for r in np.argpartition(row, -3)[-3:]:
+                maxs[r] +=1
+        elif rating < 3.0:
+            for r in np.argpartition(row, -3)[:3]:
+                mins[r] +=1
+    thresh = rows*freq
+    for key, value in maxs.items():
+        if value<thresh:
+            maxs.pop(key)
+    for key, value in mins.items():
+        if value<thresh:
+            mins.pop(key)
+    return maxs, mins
+
+
+#Previous methods
+
+
 def get_global_weights(weights, data):
     freq = np.sum(data, axis=0)
     return np.multiply(freq, weights)
@@ -13,32 +48,6 @@ def get_rationale_weight(data, target):
     weights = clf.coef_
     alt_weights = get_global_weights(weights, data)
     return weights, alt_weights
-
-
-def get_rationale_weights(data, target):
-    clf =TransparentLinearRegression()
-    clf.fit(data, target)
-    weights = clf.coef_
-    return weights
-
-
-def build_rationales(data, weights, freq):
-    rows = data.shape[0]
-    cols = data.shape[1]
-    x = np.multiply(data,weights)
-    maxs = {k:0 for k in range(cols)}
-    mins = {k:0 for k in range(cols)}
-    for row in x:
-        maxs[np.argmax(row)]+=1
-        mins[np.argmin(row)]+=1
-    thresh = rows*freq
-    for key, value in maxs.items():
-        if value<thresh:
-            maxs.pop(key)
-    for key, value in mins.items():
-        if value<thresh:
-            mins.pop(key)
-    return maxs, mins
 
 
 def get_rationales(weights, movie):
