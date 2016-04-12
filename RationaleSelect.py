@@ -1,9 +1,13 @@
+from Classifiers import TransparentRidge
 from Classifiers import TransparentLinearRegression
+from Classifiers import TransparentLasso
 from LatestPreprocessing import *
 
 
 def get_rationale_weights(data, target):
+    print "Reloaded"
     clf =TransparentLinearRegression()
+    #clf.alpha = .1
     clf.fit(data, target)
     weights = clf.coef_
     return weights
@@ -13,17 +17,35 @@ def build_rationales(data, target, weights, freq):
     rows = data.shape[0]
     cols = data.shape[1]
     x = np.multiply(data,weights)
+    print "Nonzero weights:", len(np.nonzero(np.ndarray.flatten(weights))[0])
+    print "Nonzero:", len(np.nonzero(np.ndarray.flatten(x))[0])
     maxs = {k:0 for k in range(cols)}
     mins = {k:0 for k in range(cols)}
+    prim = 0
+    post = 0
     for i in range(x.shape[0]):
         row = x[i]
         rating = target[i]
-        if rating > 3.0:
-            for r in np.argpartition(row, -3)[-3:]:
+        '''if rating > 3.0:
+            for r in np.argpartition(row[row>0], -3)[-3:]:
                 maxs[r] +=1
         elif rating < 3.0:
-            for r in np.argpartition(row, -3)[:3]:
-                mins[r] +=1
+            for r in np.argpartition(row[row<0], -3)[:3]:
+                mins[r] +=1'''
+        if rating > 3.0:
+            prim+=1
+            max = np.argmax(row)
+            if row[max] > 0:
+                post +=1
+                maxs[max] +=1
+        elif rating < 3.0:
+            prim+=1
+            min = np.argmin(row)
+            if row[min] < 0:
+                post +=1
+                mins[min] +=1
+    print "Prim:", prim
+    print "Post:",post
     thresh = rows*freq
     for key, value in maxs.items():
         if value<thresh:
@@ -127,7 +149,8 @@ genre_names = np.array(get_genre_dict().keys())
 
 rationale_weights = get_rationale_weights(genre_matrix, ratings)
 maxs, mins = build_rationales(genre_matrix, rationale_weights, 0.1)
-print_rationales(genre_names, maxs, mins)
+print names[maxs.keys()]
+print names[mins.keys()]
 '''
 
 '''
