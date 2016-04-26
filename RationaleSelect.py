@@ -2,6 +2,7 @@ from Classifiers import TransparentRidge
 from Classifiers import TransparentLinearRegression
 from Classifiers import TransparentLasso
 from LatestPreprocessing import *
+import heapq
 
 
 def get_rationale_weights(data, target):
@@ -24,26 +25,28 @@ def build_rationales(data, target, weights, freq):
     prim = 0
     post = 0
     for i in range(x.shape[0]):
-        row = x[i]
+        row = np.array(x[i])
         rating = target[i]
-        '''if rating > 3.0:
-            for r in np.argpartition(row[row>0], -3)[-3:]:
-                maxs[r] +=1
-        elif rating < 3.0:
-            for r in np.argpartition(row[row<0], -3)[:3]:
-                mins[r] +=1'''
         if rating > 3.0:
+            for r in heapq.nlargest(3, range(len(row)), key=row.__getitem__):
+                if row[r] > 0:
+                    maxs[r] +=1
+        elif rating < 3.0:
+            for r in heapq.nsmallest(3, range(len(row)), key=row.__getitem__):
+                if row[r] < 0:
+                    mins[r] +=1
+        '''if rating > 3.5:
             prim+=1
             max = np.argmax(row)
             if row[max] > 0:
                 post +=1
                 maxs[max] +=1
-        elif rating < 3.0:
+        elif rating < 2.5:
             prim+=1
             min = np.argmin(row)
             if row[min] < 0:
                 post +=1
-                mins[min] +=1
+                mins[min] +=1'''
     print "Prim:", prim
     print "Post:",post
     thresh = rows*freq
