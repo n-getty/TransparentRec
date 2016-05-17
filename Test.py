@@ -1,9 +1,8 @@
 import numpy as np
 
 
-x = np.array([1,10,11,10])
-y = np.array([3,4,5,6])
-p = np.where(x>2)
-x[p] = 0
-print x[p]
-print x
+def test2(b, c, a=10):
+    print a,b,c
+
+test2(1,2)
+test2(1,2,3)

@@ -5,50 +5,29 @@ from LatestPreprocessing import *
 import heapq
 
 
-def get_rationale_weights(data, target):
-    print "Reloaded"
-    clf =TransparentLinearRegression()
-    #clf.alpha = .1
+def get_rationale_weights(data, target, clf = TransparentRidge()):
     clf.fit(data, target)
     weights = clf.coef_
     return weights
 
 
-def build_rationales(data, target, weights, freq):
+def build_rationales(data, target, weights, freq, num_top = 3):
     rows = data.shape[0]
     cols = data.shape[1]
     x = np.multiply(data,weights)
-    print "Nonzero weights:", len(np.nonzero(np.ndarray.flatten(weights))[0])
-    print "Nonzero:", len(np.nonzero(np.ndarray.flatten(x))[0])
     maxs = {k:0 for k in range(cols)}
     mins = {k:0 for k in range(cols)}
-    prim = 0
-    post = 0
     for i in range(x.shape[0]):
         row = np.array(x[i])
         rating = target[i]
-        if rating > 3.0:
-            for r in heapq.nlargest(3, range(len(row)), key=row.__getitem__):
+        if rating > 3.5:
+            for r in heapq.nlargest(num_top, range(len(row)), key=row.__getitem__):
                 if row[r] > 0:
                     maxs[r] +=1
-        elif rating < 3.0:
-            for r in heapq.nsmallest(3, range(len(row)), key=row.__getitem__):
+        elif rating < 2.5:
+            for r in heapq.nsmallest(num_top, range(len(row)), key=row.__getitem__):
                 if row[r] < 0:
                     mins[r] +=1
-        '''if rating > 3.5:
-            prim+=1
-            max = np.argmax(row)
-            if row[max] > 0:
-                post +=1
-                maxs[max] +=1
-        elif rating < 2.5:
-            prim+=1
-            min = np.argmin(row)
-            if row[min] < 0:
-                post +=1
-                mins[min] +=1'''
-    print "Prim:", prim
-    print "Post:",post
     thresh = rows*freq
     for key, value in maxs.items():
         if value<thresh:
@@ -59,8 +38,7 @@ def build_rationales(data, target, weights, freq):
     return maxs, mins
 
 
-#Previous methods
-
+# Previous unused methods
 
 def get_global_weights(weights, data):
     freq = np.sum(data, axis=0)
@@ -129,46 +107,3 @@ def get_key_names():
     get_popular_key_dict(keywords.key)
     inv_map = {v: k for k, v in x.items()}
     return np.array([inv_map[k] for k in range(len(x))])
-
-
-'''
-#userid = 28451
-userid = 242763
-user_ratings = get_matched_user_ratings(userid)
-movies = user_ratings.keys()
-ratings = user_ratings.values()
-
-id_dict = get_id_row_dict()
-idxs = [id_dict[k] for k in movies]
-
-genre_matrix = get_genre_matrix()[idxs]
-#key_matrix  = get_key_matrix()[idxs]
-#actor_matrix = get_actor_matrix()[idxs]
-
-#key_names = get_key_names()
-genre_names = np.array(get_genre_dict().keys())
-#actor_names = np.array(get_actor_names())
-
-
-rationale_weights = get_rationale_weights(genre_matrix, ratings)
-maxs, mins = build_rationales(genre_matrix, rationale_weights, 0.1)
-print names[maxs.keys()]
-print names[mins.keys()]
-'''
-
-'''
-rationale_weights = get_rationale_weights(key_matrix, ratings)
-maxs, mins = build_rationales(key_matrix, rationale_weights, 0.05)
-print_rationales(key_names, maxs, mins)
-
-rationale_weights = get_rationale_weights(actor_matrix, ratings)
-maxs, mins = build_rationales(actor_matrix, rationale_weights, 0.01)
-print_rationales(actor_names, maxs, mins)
-
-
-rationale_data = np.column_stack((genre_matrix, key_matrix, actor_matrix))
-rationale_weights = get_rationale_weights(rationale_data, ratings)
-maxs, mins = build_rationales(rationale_data, rationale_weights, 0.01)
-names = np.hstack([genre_names, key_names, actor_names])
-print_rationales(names, maxs, mins)
-'''
